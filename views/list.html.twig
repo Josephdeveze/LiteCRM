@@ -1,0 +1,42 @@
+{% extends 'base.html.twig' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Liste des clients</h2>
+    <a href="{{ path('client_create') }}" class="btn btn-primary">Nouveau client</a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Nom</th>
+                        <th>Prénom</th>
+                        <th>Email</th>
+                        <th>Téléphone</th>
+                        <th>Entreprise</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for client in clients %}
+                    <tr>
+                        <td>{{ client.Nom }}</td>
+                        <td>{{ client.Prenom }}</td>
+                        <td>{{ client.Email }}</td>
+                        <td>{{ client.Telephone }}</td>
+                        <td>{{ client.Entreprise }}</td>
+                        <td>
+                            <a href="{{ path('client_edit', {id: client.id_client}) }}" class="btn btn-sm btn-info">Éditer</a>
+                            <a href="{{ path('client_delete', {id: client.id_client}) }}" class="btn btn-sm btn-danger" onclick="return confirm('Êtes-vous sûr ?')">Supprimer</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

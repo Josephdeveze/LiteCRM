@@ -1,0 +1,56 @@
+{% extends 'base.html.twig' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Rendez-vous du jour</h5>
+                <h2 class="card-text">{{ stats.rdv_jour }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Clients actifs</h5>
+                <h2 class="card-text">{{ stats.clients_actifs }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Rendez-vous à venir</h5>
+                <h2 class="card-text">{{ stats.rdv_a_venir }}</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Calendrier</h5>
+                <div id="calendar"></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Prochains rendez-vous</h5>
+                <ul class="list-group">
+                    {% for rdv in prochains_rdv %}
+                    <li class="list-group-item">
+                        <strong>{{ rdv.date|date('d/m/Y H:i') }}</strong><br>
+                        {{ rdv.client_nom }} {{ rdv.client_prenom }}
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

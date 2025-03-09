@@ -1,0 +1,72 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Liste des Clients - LiteCRM{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Liste des Clients</h5>
+                    <a href="{{ path('clients/create') }}" class="btn btn-sm btn-primary">
+                        <i class="fas fa-plus"></i> Nouveau Client
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Nom</th>
+                                    <th>Prénom</th>
+                                    <th>Email</th>
+                                    <th>Téléphone</th>
+                                    <th>Entreprise</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for client in clients %}
+                                    <tr>
+                                        <td>{{ client.Nom }}</td>
+                                        <td>{{ client.Prenom }}</td>
+                                        <td>{{ client.Email }}</td>
+                                        <td>{{ client.Telephone }}</td>
+                                        <td>{{ client.Entreprise }}</td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <a href="{{ path('clients/edit/' ~ client.id_client) }}" 
+                                                   class="btn btn-sm btn-info">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <button type="button" 
+                                                        class="btn btn-sm btn-danger"
+                                                        onclick="confirmDelete({{ client.id_client }})">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% else %}
+                                    <tr>
+                                        <td colspan="6" class="text-center">Aucun client trouvé</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmDelete(id) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer ce client ?')) {
+        window.location.href = '{{ path("clients/delete") }}/' + id;
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,167 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Tableau de bord - LiteCRM{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
+    <style>
+        .fc-event {
+            cursor: pointer;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h3">
+                Bienvenue {{ userName }}
+            </h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Planning de la semaine -->
+        <div class="col-lg-8 mb-4">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Planning de la semaine</h5>
+                    <a href="{{ path('rdv/new') }}" class="btn btn-sm btn-primary">
+                        <i class="fas fa-plus"></i> Nouveau RDV
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div id="calendar"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Derniers clients -->
+        <div class="col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Derniers clients</h5>
+                    <a href="{{ path('clients') }}" class="btn btn-sm btn-outline-primary">Voir tous</a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        {% for client in latestClients %}
+                            <div class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">{{ client.Nom }} {{ client.Prenom }}</h6>
+                                    <small class="text-muted">{{ client.Entreprise }}</small>
+                                </div>
+                                <small class="text-muted d-block">{{ client.Email }}</small>
+                                {% if client.Telephone is not empty %}
+                                    <small class="text-muted d-block">{{ client.Telephone }}</small>
+                                {% endif %}
+                            </div>
+                        {% else %}
+                            <div class="list-group-item text-center text-muted">
+                                Aucun client pour le moment
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Statistiques rapides -->
+        <div class="col-sm-6 col-lg-3 mb-4">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h6 class="card-title">Total Clients</h6>
+                    <h2 class="mb-0">{{ totalClients }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg-3 mb-4">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h6 class="card-title">Total RDV</h6>
+                    <h2 class="mb-0">{{ totalRdv }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal pour les détails du rendez-vous -->
+<div class="modal fade" id="rdvModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Détails du rendez-vous</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Lieu:</strong> <span id="rdvLieu"></span></p>
+                <p><strong>Date:</strong> <span id="rdvDate"></span></p>
+                <p><strong>Statut:</strong> <span id="rdvStatus"></span></p>
+                <p><strong>Notes:</strong> <span id="rdvNotes"></span></p>
+            </div>
+            <div class="modal-footer">
+                <a href="#" id="rdvEditLink" class="btn btn-primary">Modifier</a>
+                <a href="#" id="rdvDeleteLink" class="btn btn-danger">Supprimer</a>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/locales/fr.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var calendarEl = document.getElementById('calendar');
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+            locale: 'fr',
+            initialView: 'timeGridWeek',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,timeGridDay'
+            },
+            events: {{ events|raw }},
+            slotMinTime: '08:00:00',
+            slotMaxTime: '20:00:00',
+            allDaySlot: false,
+            businessHours: {
+                daysOfWeek: [ 1, 2, 3, 4, 5 ],
+                startTime: '08:00',
+                endTime: '20:00',
+            },
+            height: 'auto',
+            eventClick: function(info) {
+                var event = info.event;
+                var props = event.extendedProps;
+                var modal = document.getElementById('rdvModal');
+                
+                document.getElementById('rdvLieu').textContent = props.lieu;
+                document.getElementById('rdvStatus').textContent = props.status;
+                document.getElementById('rdvNotes').textContent = props.notes;
+                document.getElementById('rdvDate').textContent = event.start.toLocaleDateString('fr-FR', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+                                
+                document.getElementById('rdvEditLink').href = '{{ path("rdv/edit") }}/' + event.id;
+                document.getElementById('rdvDeleteLink').href = '{{ path("rdv/delete") }}/' + event.id;
+                
+                var bsModal = new bootstrap.Modal(modal);
+                bsModal.show();
+            }
+        });
+        calendar.render();
+    });
+</script>
+{% endblock %}

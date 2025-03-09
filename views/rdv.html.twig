@@ -1,0 +1,75 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Liste des Rendez-vous - LiteCRM{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Liste des Rendez-vous</h5>
+                    <a href="{{ path('rdv/create') }}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Nouveau Rendez-vous
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if rdvs is empty %}
+                        <p class="text-center text-muted">Aucun rendez-vous trouvé</p>
+                    {% else %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Heure</th>
+                                        <th>Client</th>
+                                        <th>Lieu</th>
+                                        <th>Statut</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for rdv in rdvs %}
+                                        <tr>
+                                            <td>{{ rdv.date|date('d/m/Y') }}</td>
+                                            <td>{{ rdv.heure_debut|date('H:i') }} - {{ rdv.heure_fin|date('H:i') }}</td>
+                                            <td>{{ rdv.Nom }} {{ rdv.Prenom }}</td>
+                                            <td>{{ rdv.lieu }}</td>
+                                            <td>{{ rdv.status }}</td>
+                                            <td>
+                                                <div class="btn-group">
+                                                    <a href="{{ path('rdv/edit/' ~ rdv.id_rdv) }}" class="btn btn-sm btn-info">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <button type="button" 
+                                                            class="btn btn-sm btn-danger"
+                                                            onclick="confirmDelete({{ rdv.id_rdv }})">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% else %}
+                                        <tr>
+                                            <td colspan="6" class="text-center">Aucun rendez-vous trouvé</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmDelete(id) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer ce rendez-vous ?')) {
+        window.location.href = '{{ path("rdv/delete") }}/' + id;
+    }
+}
+</script>
+{% endblock %}
