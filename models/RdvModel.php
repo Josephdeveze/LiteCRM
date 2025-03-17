@@ -162,7 +162,6 @@ class RdvModel extends Model
                     status = :status,
                     notes = :notes,
                     id_client = :id_client,
-                    id_utilisateur = :id_utilisateur
                 WHERE id_rdv = :id";
 
         $stmt = $this->db->prepare($sql);
@@ -175,7 +174,6 @@ class RdvModel extends Model
             'status' => $rdvData['status'],
             'notes' => $rdvData['notes'],
             'id_client' => $rdvData['id_client'],
-            'id_utilisateur' => $rdvData['id_utilisateur']
         ]);
     }
 
@@ -198,8 +196,7 @@ class RdvModel extends Model
                         id_client = :id_client
                     WHERE id_rdv = :id_rdv";
 
-            $stmt = $this->db->prepare($sql);
-            return $stmt->execute([
+            $params = [
                 'id_rdv' => $data['id_rdv'],
                 'date' => $data['date'],
                 'heure_debut' => $data['heure_debut'],
@@ -208,9 +205,21 @@ class RdvModel extends Model
                 'status' => $data['status'],
                 'notes' => $data['notes'],
                 'id_client' => $data['id_client']
-            ]);
+            ];
+
+            error_log("SQL: " . $sql);
+            error_log("Paramètres: " . print_r($params, true));
+
+            $stmt = $this->db->prepare($sql);
+            $result = $stmt->execute($params);
+
+            if (!$result) {
+                error_log("Erreur PDO: " . print_r($stmt->errorInfo(), true));
+            }
+
+            return $result;
         } catch (\PDOException $e) {
-            error_log("Erreur lors de la mise à jour du rendez-vous : " . $e->getMessage());
+            error_log("Exception PDO: " . $e->getMessage());
             return false;
         }
     }

@@ -172,6 +172,10 @@ try {
                     if (!$id) throw new Exception('ID rendez-vous manquant');
                     $controller->edit($id);
                     break;
+                case 'update':
+                    if (!$id) throw new Exception('ID rendez-vous manquant');
+                    $controller->update($id);
+                    break;
                 case 'delete':
                     if (!$id) throw new Exception('ID rendez-vous manquant');
                     $controller->delete($id);

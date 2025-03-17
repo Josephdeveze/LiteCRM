@@ -55,6 +55,19 @@ class RdvController extends Controller
     public function store()
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            // Validation de l'heure
+            $heure_debut = strtotime($_POST['heure_debut']);
+            $heure_fin = strtotime($_POST['heure_fin']);
+            $heure_min = strtotime('08:00:00');
+            $heure_max = strtotime('19:00:00');
+
+            if ($heure_debut < $heure_min || $heure_debut > $heure_max || 
+                $heure_fin < $heure_min || $heure_fin > $heure_max) {
+                $_SESSION['error'] = "Les rendez-vous doivent être entre 8h et 19h";
+                header('Location: ' . BASE_URL . '/rdv/create');
+                exit();
+            }
+
             $data = [
                 'date' => $_POST['date'],
                 'heure_debut' => $_POST['heure_debut'],
@@ -66,13 +79,12 @@ class RdvController extends Controller
             ];
 
             if ($this->rdvModel->createRdv($data)) {
+                $_SESSION['success'] = "Rendez-vous créé avec succès";
                 header('Location: ' . BASE_URL . '/rdv');
                 exit();
-            } else {
-                $_SESSION['error'] = "Erreur lors de la création du rendez-vous";
-                header('Location: ' . BASE_URL . '/rdv/create');
-                exit();
             }
+            
+            $_SESSION['error'] = "Erreur lors de la création du rendez-vous";
         }
         
         header('Location: ' . BASE_URL . '/rdv/create');
@@ -86,19 +98,33 @@ class RdvController extends Controller
             throw new \Exception('Rendez-vous non trouvé');
         }
 
-        // Récupération de la liste des clients pour le select
+        // Récupérer la liste des clients
         $clientModel = new \Models\ClientModel($this->db);
         $clients = $clientModel->getAllClients();
 
         return $this->render('editrdv.html.twig', [
             'rdv' => $rdv,
-            'clients' => $clients
+            'clients' => $clients,
+            'statuses' => ['Prévu', 'Confirmé', 'Annulé', 'Terminé']
         ]);
     }
 
     public function update($id)
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            // Validation de l'heure
+            $heure_debut = strtotime($_POST['heure_debut']);
+            $heure_fin = strtotime($_POST['heure_fin']);
+            $heure_min = strtotime('08:00:00');
+            $heure_max = strtotime('19:00:00');
+
+            if ($heure_debut < $heure_min || $heure_debut > $heure_max || 
+                $heure_fin < $heure_min || $heure_fin > $heure_max) {
+                $_SESSION['error'] = "Les rendez-vous doivent être entre 8h et 19h";
+                header('Location: ' . BASE_URL . '/rdv/edit/' . $id);
+                exit();
+            }
+
             $data = [
                 'id_rdv' => $id,
                 'date' => $_POST['date'],
@@ -111,10 +137,14 @@ class RdvController extends Controller
             ];
 
             if ($this->rdvModel->update($data)) {
+                $_SESSION['success'] = "Rendez-vous modifié avec succès";
                 header('Location: ' . BASE_URL . '/rdv');
                 exit();
             }
+            
+            $_SESSION['error'] = "Erreur lors de la modification";
         }
+        
         header('Location: ' . BASE_URL . '/rdv/edit/' . $id);
         exit();
     }

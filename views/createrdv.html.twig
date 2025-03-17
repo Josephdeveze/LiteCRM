@@ -29,11 +29,30 @@
                         </div>
                         <div class="form-group mb-3">
                             <label for="heure_debut">Heure de début</label>
-                            <input type="time" class="form-control" id="heure_debut" name="heure_debut" required>
+                            <input type="time" 
+                                   class="form-control" 
+                                   id="heure_debut" 
+                                   name="heure_debut" 
+                                   min="08:00" 
+                                   max="19:00" 
+                                   required>
+                            <div class="invalid-feedback">
+                                L'heure doit être comprise entre 8h et 19h
+                            </div>
                         </div>
+
                         <div class="form-group mb-3">
                             <label for="heure_fin">Heure de fin</label>
-                            <input type="time" class="form-control" id="heure_fin" name="heure_fin" required>
+                            <input type="time" 
+                                   class="form-control" 
+                                   id="heure_fin" 
+                                   name="heure_fin" 
+                                   min="08:00" 
+                                   max="19:00" 
+                                   required>
+                            <div class="invalid-feedback">
+                                L'heure doit être comprise entre 8h et 19h
+                            </div>
                         </div>
                         <div class="form-group mb-3">
                             <label for="lieu">Lieu</label>
@@ -74,5 +93,41 @@
             allowClear: true
         });
     });
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const heureDebut = document.getElementById('heure_debut');
+    const heureFin = document.getElementById('heure_fin');
+
+    function validateHeure(input) {
+        const time = input.value;
+        const [hours] = time.split(':');
+        const hour = parseInt(hours, 10);
+
+        if (hour < 8 || hour >= 19) {
+            input.setCustomValidity('Les rendez-vous doivent être entre 8h et 19h');
+        } else {
+            input.setCustomValidity('');
+        }
+    }
+
+    heureDebut.addEventListener('change', function() {
+        validateHeure(this);
+    });
+
+    heureFin.addEventListener('change', function() {
+        validateHeure(this);
+    });
+
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const debutHeure = parseInt(heureDebut.value.split(':')[0], 10);
+        const finHeure = parseInt(heureFin.value.split(':')[0], 10);
+
+        if (debutHeure < 8 || debutHeure >= 19 || finHeure < 8 || finHeure >= 19) {
+            e.preventDefault();
+            alert('Les rendez-vous doivent être entre 8h et 19h');
+        }
+    });
+});
 </script>
 {% endblock %}
