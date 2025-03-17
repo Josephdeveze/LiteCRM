@@ -9,27 +9,42 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ path('dashboard') }}">Tableau de bord</a>
+                        <a class="nav-link" href="{{ path('dashboard') }}">
+                            <i class="bi bi-speedometer2"></i> Tableau de bord
+                        </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ path('clients') }}">Clients</a>
+                        <a class="nav-link" href="{{ path('clients') }}">
+                            <i class="bi bi-people"></i> Clients
+                        </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ path('rdv') }}">Rendez-vous</a>
+                        <a class="nav-link" href="{{ path('rdv') }}">
+                            <i class="bi bi-calendar"></i> Rendez-vous
+                        </a>
                     </li>
+                    <!-- Ajout de la vérification du rôle admin -->
                     {% if session.role == 'admin' %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ path('users') }}">Utilisateurs</a>
+                            <a class="nav-link" href="{{ path('users') }}">
+                                <i class="bi bi-shield-lock"></i> Administration
+                            </a>
                         </li>
                     {% endif %}
                 </ul>
+
+                <!-- Menu utilisateur à droite -->
                 <ul class="navbar-nav">
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
                             {{ session.user_name }}
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="{{ path('profile') }}">Mon profil</a></li>
+                            <li>
+                                <a class="dropdown-item" href="{{ path('profil') }}">
+                                    <i class="bi bi-person"></i> Mon profil
+                                </a>
+                            </li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="{{ path('logout') }}">Déconnexion</a></li>
                         </ul>
@@ -39,3 +54,10 @@
         {% endif %}
     </div>
 </nav>
+
+<!-- Débogage -->
+{% if session.role is defined %}
+    <div style="display:none">
+        Role: {{ session.role }}
+    </div>
+{% endif %}

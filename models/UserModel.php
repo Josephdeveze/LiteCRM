@@ -124,17 +124,14 @@ class UserModel extends Model
      */
     public function deleteUser($id)
     {
-        // Vérifier d'abord si l'utilisateur a des rendez-vous
-        $sql = "SELECT COUNT(*) FROM `Rendez-vous` WHERE id_utilisateur = :id";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute(['id' => $id]);
-        if ($stmt->fetchColumn() > 0) {
-            throw new \Exception("Impossible de supprimer l'utilisateur car il a des rendez-vous associés");
+        try {
+            $sql = "DELETE FROM Utilisateur WHERE id_utilisateur = :id";
+            $stmt = $this->db->prepare($sql);
+            return $stmt->execute(['id' => $id]);
+        } catch (\PDOException $e) {
+            error_log("Erreur lors de la suppression de l'utilisateur : " . $e->getMessage());
+            return false;
         }
-
-        $sql = "DELETE FROM Utilisateur WHERE id_utilisateur = :id";
-        $stmt = $this->db->prepare($sql);
-        return $stmt->execute(['id' => $id]);
     }
 
     /**
@@ -207,5 +204,27 @@ class UserModel extends Model
             'fin' => $fin
         ]);
         return $stmt->fetch();
+    }
+
+    /**
+     * Récupérer un utilisateur par son email
+     *
+     * @param string $email
+     * @return array|false
+     */
+    public function getUserByEmail($email)
+    {
+        try {
+            $sql = "SELECT id_utilisateur, Nom, Prenom, Email, Password, Role 
+                    FROM Utilisateur 
+                    WHERE Email = :email";
+            
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute(['email' => $email]);
+            
+            return $stmt->fetch(\PDO::FETCH_ASSOC);
+        } catch (\PDOException $e) {
+            return false;
+        }
     }
 }

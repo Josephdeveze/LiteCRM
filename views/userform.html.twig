@@ -1,0 +1,127 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ title }} - LiteCRM{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">{{ h1 }}</h5>
+                </div>
+                <div class="card-body">
+                    {% if error %}
+                        <div class="alert alert-danger">{{ error }}</div>
+                    {% endif %}
+
+                    <form method="post" action="{{ action_url }}" class="needs-validation" novalidate>
+                        <div class="mb-3">
+                            <label for="nom" class="form-label">Nom</label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="nom" 
+                                   name="nom" 
+                                   value="{{ user.Nom }}" 
+                                   required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="prenom" class="form-label">Prénom</label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="prenom" 
+                                   name="prenom" 
+                                   value="{{ user.Prenom }}" 
+                                   required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" 
+                                   class="form-control" 
+                                   id="email" 
+                                   name="email" 
+                                   value="{{ user.Email }}" 
+                                   required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="role" class="form-label">Rôle</label>
+                            <select class="form-control" id="role" name="role" required>
+                                {% for key, label in roles %}
+                                    <option value="{{ key }}" {% if key == user.Role %}selected{% endif %}>
+                                        {{ label }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="password" class="form-label">
+                                {% if user.id_utilisateur %}
+                                    Nouveau mot de passe (laisser vide pour ne pas modifier)
+                                {% else %}
+                                    Mot de passe
+                                {% endif %}
+                            </label>
+                            <input type="password" 
+                                   class="form-control" 
+                                   id="password" 
+                                   name="password"
+                                   {% if not user.id_utilisateur %}required{% endif %}>
+                        </div>
+
+                        {% if user.id_utilisateur %}
+                            <div class="mb-3">
+                                <label for="confirm_password" class="form-label">Confirmer le mot de passe</label>
+                                <input type="password" 
+                                       class="form-control" 
+                                       id="confirm_password" 
+                                       name="confirm_password">
+                            </div>
+                        {% endif %}
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ path('users') }}" class="btn btn-secondary">Annuler</a>
+                            <button type="submit" class="btn btn-primary">Enregistrer</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+(function () {
+    'use strict'
+    var forms = document.querySelectorAll('.needs-validation')
+    Array.prototype.slice.call(forms).forEach(function (form) {
+        form.addEventListener('submit', function (event) {
+            if (!form.checkValidity()) {
+                event.preventDefault()
+                event.stopPropagation()
+            }
+            form.classList.add('was-validated')
+        }, false)
+    })
+
+    // Validation du mot de passe
+    var password = document.getElementById('password')
+    var confirmPassword = document.getElementById('confirm_password')
+    if (confirmPassword) {
+        confirmPassword.addEventListener('input', function () {
+            if (password.value !== this.value) {
+                this.setCustomValidity('Les mots de passe ne correspondent pas')
+            } else {
+                this.setCustomValidity('')
+            }
+        })
+    }
+})()
+</script>
+{% endblock %}

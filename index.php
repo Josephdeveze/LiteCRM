@@ -74,10 +74,18 @@ function checkAuth() {
     }
 }
 
+// Remplacer ou modifier la section des routes publiques
+$public_routes = [
+    'login',
+    'authenticate',
+    'logout'
+    // Retirer 'inscription' et 'register' des routes publiques
+];
+
 // Gestion des routes
 try {
     // Routes publiques (sans authentification)
-    if ($page === 'login' || $page === 'inscription') {
+    if ($page === 'login' || $page === 'authenticate') {
         $controller = new AuthController($db);
         if ($page === 'login') {
             if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -86,7 +94,7 @@ try {
                 $controller->login();
             }
         } else {
-            $controller->inscription();
+            $controller->authenticate();
         }
         exit();
     }
@@ -119,7 +127,7 @@ try {
     }
 
     // Vérification de l'authentification pour toutes les autres routes
-    if ($page !== 'login' && $page !== 'inscription') {
+    if (!in_array($page, $public_routes)) {
         checkAuth();
     }
 
@@ -187,18 +195,28 @@ try {
             break;
 
         case 'users':
+            // Vérification du rôle admin pour toutes les routes users
             if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+                $_SESSION['error'] = "Accès non autorisé";
                 header('Location: ' . BASE_URL . '/dashboard');
                 exit();
             }
+            
             $controller = new UserController($db);
             switch ($action) {
                 case 'create':
                     $controller->create();
                     break;
+                case 'store':
+                    $controller->store();
+                    break;
                 case 'edit':
                     if (!$id) throw new Exception('ID utilisateur manquant');
                     $controller->edit($id);
+                    break;
+                case 'update':
+                    if (!$id) throw new Exception('ID utilisateur manquant');
+                    $controller->update($id);
                     break;
                 case 'delete':
                     if (!$id) throw new Exception('ID utilisateur manquant');
@@ -206,6 +224,7 @@ try {
                     break;
                 default:
                     $controller->index();
+                    break;
             }
             break;
 
@@ -213,6 +232,24 @@ try {
             $controller = new UserController($db);
             $controller->profile();
             break;
+
+        case 'profil':
+            $controller = new UserController($db);
+            switch ($action) {
+                case 'update':
+                    $controller->updateProfil();
+                    break;
+                default:
+                    $controller->profil();
+                    break;
+            }
+            break;
+
+        case 'register':
+        case 'inscription':
+            // Rediriger vers la page de connexion
+            header('Location: ' . BASE_URL . '/login');
+            exit();
 
         default:
             throw new Exception('Page non trouvée');

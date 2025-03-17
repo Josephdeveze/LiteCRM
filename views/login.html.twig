@@ -15,7 +15,7 @@
                         <div class="alert alert-danger">{{ error }}</div>
                     {% endif %}
                     
-                    <form method="POST" action="{{ path('login') }}">
+                    <form method="post" action="{{ path('authenticate') }}">
                         <div class="mb-3">
                             <label for="email" class="form-label">Email</label>
                             <input type="email" class="form-control" id="email" name="email" required>
@@ -29,9 +29,9 @@
                         </div>
                     </form>
                     
-                    <div class="mt-3 text-center">
-                        <p>Pas encore de compte ? <a href="{{ path('inscription') }}">Inscrivez-vous</a></p>
-                    </div>
+                    <p class="text-center mt-3 text-muted">
+                        Contactez votre administrateur pour créer un compte.
+                    </p>
                 </div>
             </div>
         </div>

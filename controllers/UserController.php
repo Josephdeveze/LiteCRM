@@ -31,14 +31,26 @@ class UserController extends Controller
      */
     public function index()
     {
-        $this->checkAdmin();
-        $users = $this->userModel->getAllUsers();
-        $data = [
-            "title" => "Liste des utilisateurs",
-            "h1" => "Gestion des utilisateurs",
-            "users" => $users
-        ];
-        $this->render('users/list.html.twig', $data);
+        // Vérification du rôle admin
+        if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+            $_SESSION['error'] = "Accès non autorisé";
+            header('Location: ' . BASE_URL . '/dashboard');
+            exit();
+        }
+
+        try {
+            $users = $this->userModel->getAllUsers();
+            return $this->render('userlist.html.twig', [
+                'users' => $users,
+                'success' => $_SESSION['success'] ?? null,
+                'error' => $_SESSION['error'] ?? null
+            ]);
+        } catch (\Exception $e) {
+            error_log($e->getMessage());
+            $_SESSION['error'] = "Une erreur est survenue";
+            header('Location: ' . BASE_URL . '/dashboard');
+            exit();
+        }
     }
 
     /**
@@ -46,31 +58,58 @@ class UserController extends Controller
      */
     public function create()
     {
-        $this->checkAdmin();
+        // Vérification du rôle admin
+        if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+            $this->addFlashMessage('error', 'Accès non autorisé');
+            header('Location: ' . BASE_URL . '/dashboard');
+            exit();
+        }
 
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        return $this->render('userform.html.twig', [
+            'title' => 'Créer un utilisateur',
+            'h1' => 'Nouvel utilisateur',
+            'user' => [],
+            'roles' => ['user' => 'Utilisateur', 'admin' => 'Administrateur'],
+            'action_url' => BASE_URL . '/users/store'
+        ]);
+    }
+
+    public function store()
+    {
+        try {
+            // Vérification du rôle admin
+            if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+                throw new \Exception("Accès non autorisé");
+            }
+
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+                throw new \Exception("Méthode non autorisée");
+            }
+
             $userData = [
-                'Nom' => $_POST['nom'] ?? '',
-                'Prenom' => $_POST['prenom'] ?? '',
-                'Email' => $_POST['email'] ?? '',
-                'Password' => password_hash($_POST['password'], PASSWORD_DEFAULT),
-                'Role' => $_POST['role'] ?? 'user'
+                'Nom' => $_POST['nom'],
+                'Prenom' => $_POST['prenom'],
+                'Email' => $_POST['email'],
+                'Role' => $_POST['role'],
+                'Password' => password_hash($_POST['password'], PASSWORD_DEFAULT)
             ];
 
             if ($this->validateUserData($userData)) {
-                $this->userModel->createUser($userData);
-                $this->addFlashMessage('success', 'Utilisateur créé avec succès');
-                header('Location: /litecrm/users');
-                exit();
+                if ($this->userModel->createUser($userData)) {
+                    $this->addFlashMessage('success', 'Utilisateur créé avec succès');
+                    header('Location: ' . BASE_URL . '/users');
+                    exit();
+                }
             }
-        }
 
-        $data = [
-            "title" => "Création d'utilisateur",
-            "h1" => "Nouvel utilisateur",
-            "roles" => ['user' => 'Utilisateur', 'admin' => 'Administrateur']
-        ];
-        $this->render('users/form.html.twig', $data);
+            throw new \Exception("Erreur lors de la création de l'utilisateur");
+
+        } catch (\Exception $e) {
+            error_log($e->getMessage());
+            $this->addFlashMessage('error', $e->getMessage());
+            header('Location: ' . BASE_URL . '/users/create');
+            exit();
+        }
     }
 
     /**
@@ -80,48 +119,79 @@ class UserController extends Controller
      */
     public function edit($id)
     {
-        // Vérification des droits
-        if (!$this->canEditUser($id)) {
-            $this->addFlashMessage('error', 'Accès non autorisé');
-            header('Location: /litecrm/');
+        if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+            $_SESSION['error'] = "Accès non autorisé";
+            header('Location: ' . BASE_URL . '/dashboard');
             exit();
         }
 
         $user = $this->userModel->getUserById($id);
         if (!$user) {
-            $this->addFlashMessage('error', 'Utilisateur non trouvé');
-            header('Location: /litecrm/users');
+            $_SESSION['error'] = "Utilisateur non trouvé";
+            header('Location: ' . BASE_URL . '/users');
             exit();
         }
 
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        return $this->render('userform.html.twig', [
+            'title' => "Modifier l'utilisateur",
+            'h1' => "Modifier l'utilisateur",
+            'user' => $user,
+            'roles' => ['user' => 'Utilisateur', 'admin' => 'Administrateur'],
+            'action_url' => BASE_URL . '/users/update/' . $id
+        ]);
+    }
+
+    /**
+     * Mettre à jour un utilisateur
+     * 
+     * @param int $id Identifiant de l'utilisateur
+     */
+    public function update($id)
+    {
+        try {
+            // Vérification du rôle admin
+            if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+                throw new \Exception("Accès non autorisé");
+            }
+
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+                throw new \Exception("Méthode non autorisée");
+            }
+
+            $user = $this->userModel->getUserById($id);
+            if (!$user) {
+                throw new \Exception("Utilisateur non trouvé");
+            }
+
             $userData = [
                 'id_utilisateur' => $id,
-                'Nom' => $_POST['nom'] ?? $user['Nom'],
-                'Prenom' => $_POST['prenom'] ?? $user['Prenom'],
-                'Email' => $_POST['email'] ?? $user['Email'],
-                'Role' => $_SESSION['role'] === 'admin' ? ($_POST['role'] ?? $user['Role']) : $user['Role']
+                'Nom' => $_POST['nom'],
+                'Prenom' => $_POST['prenom'],
+                'Email' => $_POST['email'],
+                'Role' => $_POST['role']
             ];
 
+            // Mise à jour du mot de passe si fourni
             if (!empty($_POST['password'])) {
                 $userData['Password'] = password_hash($_POST['password'], PASSWORD_DEFAULT);
             }
 
             if ($this->validateUserData($userData)) {
-                $this->userModel->updateUser($userData);
-                $this->addFlashMessage('success', 'Utilisateur modifié avec succès');
-                header('Location: /litecrm/users');
-                exit();
+                if ($this->userModel->updateUser($userData)) {
+                    $this->addFlashMessage('success', 'Utilisateur modifié avec succès');
+                    header('Location: ' . BASE_URL . '/users');
+                    exit();
+                }
             }
-        }
 
-        $data = [
-            "title" => "Modification d'utilisateur",
-            "h1" => "Modifier l'utilisateur",
-            "user" => $user,
-            "roles" => ['user' => 'Utilisateur', 'admin' => 'Administrateur']
-        ];
-        $this->render('users/form.html.twig', $data);
+            throw new \Exception("Erreur lors de la mise à jour");
+
+        } catch (\Exception $e) {
+            error_log($e->getMessage());
+            $this->addFlashMessage('error', $e->getMessage());
+            header('Location: ' . BASE_URL . '/users/edit/' . $id);
+            exit();
+        }
     }
 
     /**
@@ -131,17 +201,27 @@ class UserController extends Controller
      */
     public function delete($id)
     {
-        $this->checkAdmin();
-        
-        if ($id == $_SESSION['user_id']) {
-            $this->addFlashMessage('error', 'Vous ne pouvez pas supprimer votre propre compte');
-            header('Location: /litecrm/users');
-            exit();
+        try {
+            // Vérification du rôle admin
+            if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+                throw new \Exception("Accès non autorisé");
+            }
+
+            // Empêcher la suppression de son propre compte
+            if ($id == $_SESSION['user_id']) {
+                throw new \Exception("Vous ne pouvez pas supprimer votre propre compte");
+            }
+
+            if ($this->userModel->deleteUser($id)) {
+                $_SESSION['success'] = "Utilisateur supprimé avec succès";
+            } else {
+                throw new \Exception("Erreur lors de la suppression de l'utilisateur");
+            }
+        } catch (\Exception $e) {
+            $_SESSION['error'] = $e->getMessage();
         }
 
-        $this->userModel->deleteUser($id);
-        $this->addFlashMessage('success', 'Utilisateur supprimé avec succès');
-        header('Location: /litecrm/users');
+        header('Location: ' . BASE_URL . '/users');
         exit();
     }
 
@@ -316,17 +396,6 @@ class UserController extends Controller
     }
 
     /**
-     * Vérifier si l'utilisateur peut modifier un profil.
-     *
-     * @param int $userId Identifiant de l'utilisateur à modifier
-     * @return bool
-     */
-    private function canEditUser($userId)
-    {
-        return $_SESSION['role'] === 'admin' || $_SESSION['user_id'] == $userId;
-    }
-
-    /**
      * Valider les données utilisateur.
      *
      * @param array $userData Données à valider
@@ -345,5 +414,81 @@ class UserController extends Controller
         }
 
         return true;
+    }
+
+    private function addFlashMessage($type, $message)
+    {
+        $_SESSION[$type] = $message;
+    }
+
+    public function profil()
+    {
+        if (!isset($_SESSION['user_id'])) {
+            header('Location: ' . BASE_URL . '/login');
+            exit();
+        }
+
+        $user = $this->userModel->getUserById($_SESSION['user_id']);
+        
+        return $this->render('profil.html.twig', [
+            'user' => $user
+        ]);
+    }
+
+    public function updateProfil()
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . BASE_URL . '/profil');
+            exit();
+        }
+
+        try {
+            $userId = $_SESSION['user_id'];
+            $data = [
+                'id_utilisateur' => $userId,
+                'Nom' => $_POST['Nom'],
+                'Prenom' => $_POST['Prenom'],
+                'Email' => $_POST['Email'],
+                'Telephone' => $_POST['Telephone']
+            ];
+
+            // Vérification du mot de passe si changement demandé
+            if (!empty($_POST['current_password'])) {
+                if ($_POST['new_password'] !== $_POST['confirm_password']) {
+                    throw new \Exception('Les nouveaux mots de passe ne correspondent pas');
+                }
+                
+                if (!$this->userModel->verifyPassword($userId, $_POST['current_password'])) {
+                    throw new \Exception('Mot de passe actuel incorrect');
+                }
+                
+                $data['password'] = password_hash($_POST['new_password'], PASSWORD_DEFAULT);
+            }
+
+            if ($this->userModel->updateUser($data)) {
+                $_SESSION['success'] = 'Profil mis à jour avec succès';
+            } else {
+                throw new \Exception('Erreur lors de la mise à jour du profil');
+            }
+        } catch (\Exception $e) {
+            $_SESSION['error'] = $e->getMessage();
+        }
+
+        header('Location: ' . BASE_URL . '/profil');
+        exit();
+    }
+
+    public function inscription()
+    {
+        // Redirection vers la page de connexion
+        header('Location: ' . BASE_URL . '/login');
+        exit();
+    }
+
+    public function register()
+    {
+        // Redirection vers la page de connexion
+        header('Location: ' . BASE_URL . '/login');
+        exit();
     }
 }

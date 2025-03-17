@@ -51,7 +51,7 @@ class AuthController extends Controller {
                         if ($user) {
                             $_SESSION['user_id'] = $user['id_utilisateur'];
                             $_SESSION['user_name'] = $user['Nom'] . ' ' . $user['Prenom'];
-                            $_SESSION['role'] = $user['role'];
+                            $_SESSION['role'] = $user['Role'];
                             header('Location: ' . BASE_URL . '/dashboard');
                             exit();
                         }
@@ -80,49 +80,71 @@ class AuthController extends Controller {
         $this->render('inscription.html.twig');
     }
 
-    public function login() {
+    public function login()
+    {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $email = $_POST['email'] ?? '';
-            $password = $_POST['password'] ?? '';
-            
-            $user = $this->userModel->authenticate($email, $password);
-            if ($user) {
+            $email = $_POST['email'];
+            $password = $_POST['password'];
+
+            // Debug détaillé
+            error_log("=== Début login ===");
+            error_log("Email: " . $email);
+
+            $user = $this->userModel->getUserByEmail($email);
+            error_log("Utilisateur trouvé: " . print_r($user, true));
+
+            if ($user && password_verify($password, $user['Password'])) {
                 $_SESSION['user_id'] = $user['id_utilisateur'];
-                $_SESSION['user_name'] = $user['Nom'] . ' ' . $user['Prenom'];
-                $_SESSION['role'] = $user['role'];
+                $_SESSION['user_name'] = $user['Prenom'] . ' ' . $user['Nom'];
+                $_SESSION['role'] = $user['Role'];
+
+                error_log("Session créée: " . print_r($_SESSION, true));
+                error_log("Rôle défini: " . $_SESSION['role']);
+
                 header('Location: ' . BASE_URL . '/dashboard');
                 exit();
-            } else {
-                $this->render('login.html.twig', [
-                    'error' => "Email ou mot de passe incorrect"
-                ]);
             }
-        } else {
-            $this->render('login.html.twig');
+            error_log("Échec de l'authentification");
         }
+        return $this->render('login.html.twig');
     }
 
-    public function authenticate() {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $email = $_POST['email'] ?? '';
-            $password = $_POST['password'] ?? '';
-            
-            $user = $this->userModel->authenticate($email, $password);
-            if ($user) {
+    public function authenticate()
+    {
+        try {
+            $email = $_POST['email'];
+            $password = $_POST['password'];
+
+            $user = $this->userModel->getUserByEmail($email);
+
+            if ($user && password_verify($password, $user['Password'])) {
                 $_SESSION['user_id'] = $user['id_utilisateur'];
-                $_SESSION['user_name'] = $user['Nom'] . ' ' . $user['Prenom'];
-                $_SESSION['role'] = $user['role'];
+                $_SESSION['user_name'] = $user['Prenom'] . ' ' . $user['Nom'];
+                $_SESSION['role'] = $user['Role'];
+                
                 header('Location: ' . BASE_URL . '/dashboard');
                 exit();
-            } else {
-                header('Location: ' . BASE_URL . '/login?error=1');
-                exit();
             }
+
+            $_SESSION['error'] = 'Identifiants incorrects';
+            header('Location: ' . BASE_URL . '/login');
+            exit();
+        } catch (\Exception $e) {
+            $_SESSION['error'] = "Une erreur est survenue";
+            header('Location: ' . BASE_URL . '/login');
+            exit();
         }
     }
 
     public function logout() {
         session_destroy();
+        header('Location: ' . BASE_URL . '/login');
+        exit();
+    }
+
+    public function register()
+    {
+        // Redirection vers login si quelqu'un essaie d'accéder à register
         header('Location: ' . BASE_URL . '/login');
         exit();
     }
