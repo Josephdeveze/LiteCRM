@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : localhost
--- Généré le : lun. 03 mars 2025 à 11:54
+-- Généré le : lun. 17 mars 2025 à 14:27
 -- Version du serveur : 10.4.28-MariaDB
 -- Version de PHP : 8.2.4
 
@@ -37,6 +37,13 @@ CREATE TABLE `Client` (
   `Adresse` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Déchargement des données de la table `Client`
+--
+
+INSERT INTO `Client` (`id_client`, `Nom`, `Prenom`, `Email`, `Telephone`, `Entreprise`, `Adresse`) VALUES
+(1, 'Deveze', 'Joseph', 'joseph.deveze.jd@gmail.com', 648800322, 'Test', 'test');
+
 -- --------------------------------------------------------
 
 --
@@ -54,6 +61,13 @@ CREATE TABLE `Rendez-vous` (
   `notes` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Déchargement des données de la table `Rendez-vous`
+--
+
+INSERT INTO `Rendez-vous` (`id_rdv`, `id_client`, `date`, `heure_debut`, `heure_fin`, `lieu`, `status`, `notes`) VALUES
+(13, 1, '2025-03-18', '13:00:00', '15:00:00', 'Nice', 'Prévu', 'test'),
+(17, 1, '2025-03-20', '16:00:00', '17:00:00', 'Paris', 'Confirmé', '');
 
 -- --------------------------------------------------------
 
@@ -71,6 +85,14 @@ CREATE TABLE `Utilisateur` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
+-- Déchargement des données de la table `Utilisateur`
+--
+
+INSERT INTO `Utilisateur` (`id_utilisateur`, `Nom`, `Prenom`, `Email`, `Password`, `Role`) VALUES
+(1, 'Deveze', 'Joseph', 'joseph.deveze.jd@gmail.com', '$2y$10$N6pypjie0AVTflz/Jhp6luIfXiR.ltBKbRGx0VPoGksI5GoFsjcS6', 'user'),
+(4, 'admin', 'admin', 'admin@admin.fr', '$2y$10$Z7cg9POVymynQ08EQdn7L.3eP8sKzaLfe9LGIdMANiYGBTaiqBXbe', 'admin');
+
+--
 -- Index pour les tables déchargées
 --
 
@@ -84,7 +106,8 @@ ALTER TABLE `Client`
 -- Index pour la table `Rendez-vous`
 --
 ALTER TABLE `Rendez-vous`
-  ADD PRIMARY KEY (`id_rdv`);
+  ADD PRIMARY KEY (`id_rdv`),
+  ADD KEY `rendez_vous_ibfk_1` (`id_client`);
 
 --
 -- Index pour la table `Utilisateur`
@@ -100,27 +123,29 @@ ALTER TABLE `Utilisateur`
 -- AUTO_INCREMENT pour la table `Client`
 --
 ALTER TABLE `Client`
-  MODIFY `id_client` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_client` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT pour la table `Rendez-vous`
 --
 ALTER TABLE `Rendez-vous`
-  MODIFY `id_rdv` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_rdv` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- AUTO_INCREMENT pour la table `Utilisateur`
 --
 ALTER TABLE `Utilisateur`
-  MODIFY `id_utilisateur` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_utilisateur` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
--- Ajout de la colonne et de la clé étrangère pour la table `Rendez-vous`
+-- Contraintes pour les tables déchargées
+--
+
+--
+-- Contraintes pour la table `Rendez-vous`
 --
 ALTER TABLE `Rendez-vous`
-  ADD COLUMN `id_client` int(11) NOT NULL AFTER `id_rdv`,
-  ADD FOREIGN KEY (`id_client`) REFERENCES `Client`(`id_client`);
-
+  ADD CONSTRAINT `rendez_vous_ibfk_1` FOREIGN KEY (`id_client`) REFERENCES `Client` (`id_client`) ON UPDATE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
