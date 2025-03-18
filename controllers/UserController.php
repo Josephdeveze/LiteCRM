@@ -333,6 +333,12 @@ class UserController extends Controller
      */
     public function dashboard()
     {
+        // Vérification de l'authentification
+        if (!isset($_SESSION['user_id'])) {
+            header('Location: ' . BASE_URL . '/login');
+            exit();
+        }
+
         // Récupération des rendez-vous
         $rdvModel = new \Models\RdvModel($this->db);
         $rdvs = $rdvModel->getAllRdv();

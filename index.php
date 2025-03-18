@@ -66,79 +66,55 @@ $page = !empty($urlParts[0]) ? $urlParts[0] : 'dashboard';
 $action = !empty($urlParts[1]) ? $urlParts[1] : 'index';
 $id = !empty($urlParts[2]) ? $urlParts[2] : null;
 
-// Fonction de vérification d'authentification
-function checkAuth() {
-    if (!isset($_SESSION['user_id'])) {
-        header('Location: ' . BASE_URL . '/login');
-        exit();
-    }
+// Liste des routes publiques
+$public_routes = ['login', 'authenticate', 'logout'];
+
+// Vérifier l'authentification pour toutes les routes sauf les routes publiques
+if (!in_array($page, $public_routes)) {
+    require_once ROOT_PATH . '/middlewares/AuthMiddleware.php';
+    \Middlewares\AuthMiddleware::checkAuth();
 }
 
-// Remplacer ou modifier la section des routes publiques
-$public_routes = [
-    'login',
-    'authenticate',
-    'logout'
-    // Retirer 'inscription' et 'register' des routes publiques
-];
-
-// Gestion des routes
 try {
-    // Routes publiques (sans authentification)
-    if ($page === 'login' || $page === 'authenticate') {
-        $controller = new AuthController($db);
-        if ($page === 'login') {
-            if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-                $controller->authenticate();
-            } else {
-                $controller->login();
-            }
-        } else {
-            $controller->authenticate();
-        }
-        exit();
-    }
-
-    if ($page === 'logout') {
-        $controller = new AuthController($db);
-        $controller->logout();
-        exit();
-    }
-
-    // Route pour afficher la liste des clients
-    if ($_SERVER['REQUEST_METHOD'] === 'GET' && $_SERVER['REQUEST_URI'] === '/clients') {
-        $controller = new \Controllers\ClientController($db);
-        $controller->index();
-        exit();
-    }
-
-    // Route pour afficher le formulaire de création de client
-    if ($_SERVER['REQUEST_METHOD'] === 'GET' && $_SERVER['REQUEST_URI'] === '/client/create') {
-        $controller = new \Controllers\ClientController($db);
-        $controller->create();
-        exit();
-    }
-
-    // Route pour gérer l'inscription des clients
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_SERVER['REQUEST_URI'] === '/client/store') {
-        $controller = new \Controllers\ClientController($db);
-        $controller->store();
-        exit();
-    }
-
-    // Vérification de l'authentification pour toutes les autres routes
-    if (!in_array($page, $public_routes)) {
-        checkAuth();
-    }
-
-    // Routage principal
     switch ($page) {
-        case 'dashboard':
-            $controller = new UserController($db); // Passage de la connexion PDO
-            $controller->dashboard();
-            break;
+        case 'login':
+        case 'authenticate':
+            $controller = new AuthController($db);
+            if ($page === 'login') {
+                if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                    $controller->authenticate();
+                } else {
+                    $controller->login();
+                }
+            } else {
+                $controller->authenticate();
+            }
+            exit();
+
+        case 'logout':
+            $controller = new AuthController($db);
+            $controller->logout();
+            exit();
 
         case 'clients':
+            if ($_SERVER['REQUEST_METHOD'] === 'GET' && $_SERVER['REQUEST_URI'] === '/clients') {
+                $controller = new \Controllers\ClientController($db);
+                $controller->index();
+                exit();
+            }
+
+            if ($_SERVER['REQUEST_METHOD'] === 'GET' && $_SERVER['REQUEST_URI'] === '/client/create') {
+                $controller = new \Controllers\ClientController($db);
+                $controller->create();
+                exit();
+            }
+
+            if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_SERVER['REQUEST_URI'] === '/client/store') {
+                $controller = new \Controllers\ClientController($db);
+                $controller->store();
+                exit();
+            }
+
             $controller = new ClientController($db);
             switch ($action) {
                 case 'create':
@@ -250,6 +226,11 @@ try {
             // Rediriger vers la page de connexion
             header('Location: ' . BASE_URL . '/login');
             exit();
+
+        case 'dashboard':
+            $controller = new UserController($db);
+            $controller->dashboard();
+            break;
 
         default:
             throw new Exception('Page non trouvée');
