@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         bootstrap="bootstrap.php"
+         colors="true"
+         testdox="true"
+         verbose="true">
+    <testsuites>
+        <testsuite name="LiteCRM">
+            <directory>.</directory>
+        </testsuite>
+    </testsuites>
+    <php>
+        <server name="ROOT_PATH" value="/Applications/XAMPP/xamppfiles/htdocs/litecrm"/>
+        <server name="BASE_URL" value="/litecrm"/>
+    </php>
+</phpunit>
