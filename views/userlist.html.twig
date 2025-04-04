@@ -98,7 +98,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                <a href="#" id="deleteLink" class="btn btn-danger">Supprimer</a>
+                <button type="button" id="deleteButton" class="btn btn-danger">Supprimer</button>
             </div>
         </div>
     </div>
@@ -108,10 +108,20 @@
 {% block javascripts %}
 {{ parent() }}
 <script>
+let userIdToDelete;
+
 function confirmDelete(userId) {
+    userIdToDelete = userId;
     const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
-    document.getElementById('deleteLink').href = "{{ path('users/delete') }}/" + userId;
     modal.show();
 }
+
+document.getElementById('deleteButton').addEventListener('click', function() {
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '{{ base_url }}/users/delete/' + userIdToDelete;
+    document.body.appendChild(form);
+    form.submit();
+});
 </script>
 {% endblock %}

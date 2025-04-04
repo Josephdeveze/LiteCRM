@@ -68,7 +68,12 @@
 <script>
 function confirmDelete(id) {
     if (confirm('Êtes-vous sûr de vouloir supprimer ce rendez-vous ?')) {
-        window.location.href = '{{ path("rdv/delete") }}/' + id;
+        // Créer un formulaire temporaire pour envoyer la requête POST
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{{ base_url }}/rdv/delete/' + id;
+        document.body.appendChild(form);
+        form.submit();
     }
 }
 </script>

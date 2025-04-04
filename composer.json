@@ -8,7 +8,16 @@
             "App\\": "src/",
             "Controllers\\": "controllers/",
             "Models\\": "models/",
-            "Database\\": "database/"
+            "Database\\": "database/",
+            "Middlewares\\": "middlewares/"
         }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^12.0"
     }
 }

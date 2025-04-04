@@ -54,10 +54,25 @@ class UserModel extends Model
      */
     public function getUserById($id)
     {
-        $sql = "SELECT id_utilisateur, Nom, Prenom, Email, Role FROM Utilisateur WHERE id_utilisateur = :id";
+        $sql = "SELECT id_utilisateur, Nom, Prenom, Email, Password, Role FROM Utilisateur WHERE id_utilisateur = :id";
         $stmt = $this->db->prepare($sql);
         $stmt->execute(['id' => $id]);
         return $stmt->fetch();
+    }
+
+    /**
+     * Vérifier le mot de passe d'un utilisateur
+     *
+     * @param int $userId
+     * @param string $password
+     * @return bool
+     */
+    public function verifyPassword($userId, $password) {
+        $user = $this->getUserById($userId);
+        if (!$user) {
+            return false;
+        }
+        return password_verify($password, $user['Password']);
     }
 
     /**

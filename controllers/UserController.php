@@ -258,7 +258,7 @@ class UserController extends Controller
             "h1" => "Gérer mon profil",
             "user" => $user
         ];
-        $this->render('users/profile.html.twig', $data);
+        $this->render('profile.html.twig', $data);
     }
 
     /**
@@ -436,7 +436,7 @@ class UserController extends Controller
 
         $user = $this->userModel->getUserById($_SESSION['user_id']);
         
-        return $this->render('profil.html.twig', [
+        return $this->render('profile.html.twig', [
             'user' => $user
         ]);
     }
