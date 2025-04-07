@@ -4,4 +4,4 @@ RewriteBase /litecrm/
 # Si le fichier ou dossier n'existe pas physiquement
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(.*)$ index.php?url=$1 [QSA,L]
+RewriteRule ^(.*)$ index.php?url=$1 [QSA,L] 
