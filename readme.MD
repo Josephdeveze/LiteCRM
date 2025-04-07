@@ -24,6 +24,14 @@ mysql -u root -p < database/litecrm.sql
 - Placez le projet dans `/Applications/XAMPP/xamppfiles/htdocs/litecrm`
 - Assurez-vous que Apache et MySQL sont démarrés
 
+5. Connexion :
+- Admin : admin@admin.fr
+- Mots de passe : Admin13@
+
+- Utilisateur : joseph.deveze.jd@gmail.com
+- Mots de passe : Joseph12@
+
+
 ## 🛠 Structure du Projet
 
 ```
