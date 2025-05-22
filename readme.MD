@@ -1,6 +1,6 @@
 # LiteCRM
 
-Une application CRM légère et efficace développée en PHP.
+Cette branche contient la version **serveur** de LiteCRM, optimisée pour le déploiement sur un environnement de production ou de préproduction.
 
 ## 🚀 Installation
 
