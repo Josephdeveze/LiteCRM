@@ -1,0 +1,49 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier Client - LiteCRM{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Modifier Client</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{{ path('clients/update/' ~ client.id_client) }}">
+                        <div class="form-group mb-3">
+                            <label for="Nom">Nom</label>
+                            <input type="text" class="form-control" id="Nom" name="Nom" value="{{ client.Nom }}" required>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="Prenom">Prénom</label>
+                            <input type="text" class="form-control" id="Prenom" name="Prenom" value="{{ client.Prenom }}" required>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="Email">Email</label>
+                            <input type="email" class="form-control" id="Email" name="Email" value="{{ client.Email }}" required>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="Telephone">Téléphone</label>
+                            <input type="tel" class="form-control" id="Telephone" name="Telephone" value="{{ client.Telephone }}" required>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="Entreprise">Entreprise</label>
+                            <input type="text" class="form-control" id="Entreprise" name="Entreprise" value="{{ client.Entreprise }}" required>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="Adresse">Adresse</label>
+                            <textarea class="form-control" id="Adresse" name="Adresse" required>{{ client.Adresse }}</textarea>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ path('clients') }}" class="btn btn-secondary">Annuler</a>
+                            <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

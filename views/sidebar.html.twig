@@ -1,0 +1,30 @@
+{% if session.user_id is defined %}
+    <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+        <div class="position-sticky pt-3">
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ path('dashboard') }}">
+                        <i class="bi bi-speedometer2"></i> Tableau de bord
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ path('clients') }}">
+                        <i class="bi bi-people"></i> Clients
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ path('rdv') }}">
+                        <i class="bi bi-calendar"></i> Rendez-vous
+                    </a>
+                </li>
+                {% if session.role == 'admin' %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('users') }}">
+                            <i class="bi bi-person-gear"></i> Utilisateurs
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
+{% endif %}
